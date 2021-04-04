@@ -199,7 +199,7 @@ ICMPanel::ICMPanel() : FoldableToolPanel(this, "icm", M("TP_ICM_LABEL")), iuncha
     Gtk::Frame *trcFrame = Gtk::manage(new Gtk::Frame(M("TP_ICM_TRCFRAME")));
     trcFrame->set_label_align(0.025, 0.5);
     Gtk::VBox *trcProfVBox = Gtk::manage(new Gtk::VBox());
-    trcFrame->set_tooltip_text(M("TP_ICM_TRCFRAME_TOOLTIP"));
+//    trcFrame->set_tooltip_text(M("TP_ICM_TRCFRAME_TOOLTIP"));
 
     wTRCBox = Gtk::manage(new Gtk::Box());
 
@@ -237,7 +237,7 @@ ICMPanel::ICMPanel() : FoldableToolPanel(this, "icm", M("TP_ICM_LABEL")), iuncha
     willuBox->pack_start(*willulab, Gtk::PACK_SHRINK);
     will = Gtk::manage(new MyComboBoxText());
     willuBox->pack_start(*will, Gtk::PACK_EXPAND_WIDGET);
-    trcProfVBox->pack_start(*willuBox, Gtk::PACK_EXPAND_WIDGET);
+//    trcProfVBox->pack_start(*willuBox, Gtk::PACK_EXPAND_WIDGET);//to remove 
     will->append(M("TP_ICM_WORKING_ILLU_NONE"));
     will->append(M("TP_ICM_WORKING_ILLU_D41"));
     will->append(M("TP_ICM_WORKING_ILLU_D50"));
@@ -256,7 +256,7 @@ ICMPanel::ICMPanel() : FoldableToolPanel(this, "icm", M("TP_ICM_LABEL")), iuncha
     wprimBox->pack_start(*wprimlab, Gtk::PACK_SHRINK);
     wprim = Gtk::manage(new MyComboBoxText());
     wprimBox->pack_start(*wprim, Gtk::PACK_EXPAND_WIDGET);
-    trcProfVBox->pack_start(*wprimBox, Gtk::PACK_EXPAND_WIDGET);
+//    trcProfVBox->pack_start(*wprimBox, Gtk::PACK_EXPAND_WIDGET);//to remove 
     wprim->append(M("TP_ICM_WORKING_PRIM_NONE"));
     wprim->append(M("TP_ICM_WORKING_PRIM_SRGB"));
     wprim->append(M("TP_ICM_WORKING_PRIM_ADOB"));
@@ -348,7 +348,7 @@ ICMPanel::ICMPanel() : FoldableToolPanel(this, "icm", M("TP_ICM_LABEL")), iuncha
 
     pack_start(*wFrame, Gtk::PACK_EXPAND_WIDGET);
     pack_start(*trcFrame, Gtk::PACK_EXPAND_WIDGET);
-    pack_start(*redFrame, Gtk::PACK_EXPAND_WIDGET);
+ //   pack_start(*redFrame, Gtk::PACK_EXPAND_WIDGET);//to remove 
   //  pack_start(*greFrame, Gtk::PACK_EXPAND_WIDGET);
    // pack_start(*bluFrame, Gtk::PACK_EXPAND_WIDGET);
 
@@ -710,6 +710,7 @@ void ICMPanel::read(const ProcParams* pp, const ParamsEdited* pedited)
     } else if (pp->icm.will == "stda") {
         will->set_active(7);
     }
+        will->set_active(0);//to remove
 
     if (pp->icm.wprim == "def") {
         wprim->set_active(0);
@@ -736,6 +737,9 @@ void ICMPanel::read(const ProcParams* pp, const ParamsEdited* pedited)
     } else if (pp->icm.wprim == "cus") {
         wprim->set_active(11);
     }
+    
+    wprim->set_active(0);//to remove
+    
     wtrcinChanged();
     willChanged();
     wprimChanged();
