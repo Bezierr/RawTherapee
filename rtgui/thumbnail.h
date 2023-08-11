@@ -22,6 +22,7 @@
 #include <string>
 
 #include <glibmm/ustring.h>
+#include <glibmm/datetime.h>
 
 #include "cacheimagedata.h"
 #include "threadutils.h"
@@ -73,6 +74,7 @@ class Thumbnail
     // exif & date/time strings
     Glib::ustring   exifString;
     Glib::ustring   dateTimeString;
+    Glib::DateTime  dateTime;
 
     bool            initial_;
 
@@ -124,8 +126,9 @@ public:
 
     const Glib::ustring&  getExifString () const;
     const Glib::ustring&  getDateTimeString () const;
-    void                  getCamWB  (double& temp, double& green) const;
-    void                  getAutoWB (double& temp, double& green, double equal, double tempBias);
+    const Glib::DateTime& getDateTime () const;
+    void                  getCamWB  (double& temp, double& green, rtengine::StandardObserver observer) const;
+    void                  getAutoWB (double& temp, double& green, double equal, rtengine::StandardObserver observer, double tempBias);
     void                  getSpotWB (int x, int y, int rect, double& temp, double& green);
     void                  applyAutoExp (rtengine::procparams::ProcParams& pparams);
 

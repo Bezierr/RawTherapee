@@ -8,7 +8,7 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *  RawTherapee is distributed in the hope that it will be useful,
-itcw *
+ * 
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
@@ -48,6 +48,8 @@ public:
     bool            verbose;
     Glib::ustring   darkFramesPath;         ///< The default directory for dark frames
     Glib::ustring   flatFieldsPath;         ///< The default directory for flat fields
+    Glib::ustring   cameraProfilesPath;     ///< The default directory for camera profiles
+    Glib::ustring   lensProfilesPath;       ///< The default directory for lens profiles
 
     Glib::ustring   adobe;                  // filename of AdobeRGB1998 profile (default to the bundled one)
     Glib::ustring   prophoto;               // filename of Prophoto     profile (default to the bundled one)
@@ -58,6 +60,7 @@ public:
     Glib::ustring   srgb;                   // filename of sRGB         profile (default to the bundled one)
     Glib::ustring   rec2020;                // filename of Rec2020      profile (default to the bundled one)
     Glib::ustring   ACESp0;                 // filename of ACES P0      profile (default to the bundled one)
+    Glib::ustring   JDCmax;                 // filename of JDCmax      profile (default to the bundled one)
     Glib::ustring   ACESp1;                 // filename of ACES P1      profile (default to the bundled one)
     Glib::ustring   DCIP3;                 // filename of DCIP3         profile (default to the bundled one)
 
@@ -83,6 +86,7 @@ public:
     double          level0_cbdl;
     double          level123_cbdl;
     Glib::ustring   lensfunDbDirectory; // The directory containing the lensfun database. If empty, the system defaults will be used, as described in https://lensfun.github.io/manual/latest/dbsearch.html
+    Glib::ustring   lensfunDbBundleDirectory;
     int             cropsleep;
     double          reduchigh;
     double          reduclow;
@@ -91,16 +95,10 @@ public:
     int             previewselection;
     double          cbdlsensi;
 //    bool            showtooltip;
+    bool            itcwb_enable;
+    double          itcwb_deltaspec;
+    double          itcwb_powponder;
 
-    int             itcwb_thres;
-    bool            itcwb_sort;
-    int             itcwb_greenrange;
-    int             itcwb_greendeltatemp;
-    bool            itcwb_forceextra;
-    int             itcwb_sizereference;
-    int             itcwb_delta;
-    bool            itcwb_stdobserver10;
-    int             itcwb_precis;
 //wavelet levels
     double          edghi;
     double          edglo;

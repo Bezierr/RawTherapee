@@ -261,7 +261,7 @@ private:
             pl->setProgress(0.40);
         }
 
-        imgsrc->HLRecovery_Global(params.toneCurve);
+        // imgsrc->HLRecovery_Global(params.toneCurve);
 
 
         if (pl) {
@@ -269,7 +269,7 @@ private:
         }
 
         // set the color temperature
-        currWB = ColorTemp(params.wb.temperature, params.wb.green, params.wb.equal, params.wb.method);
+        currWB = ColorTemp(params.wb.temperature, params.wb.green, params.wb.equal, params.wb.method, params.wb.observer);
 
         if (!params.wb.enabled) {
             currWB = ColorTemp();
@@ -278,7 +278,7 @@ private:
         } else if (params.wb.method == "autold") {
             double rm, gm, bm;
             imgsrc->getAutoWBMultipliers(rm, gm, bm);
-            currWB.update(rm, gm, bm, params.wb.equal, params.wb.tempBias);
+            currWB.update(rm, gm, bm, params.wb.equal, params.wb.observer, params.wb.tempBias);
         }
 
         calclum = nullptr ;
@@ -372,7 +372,7 @@ private:
                             int beg_tileW = wcr * tileWskip + tileWskip / 2.f - crW / 2.f;
                             int beg_tileH = hcr * tileHskip + tileHskip / 2.f - crH / 2.f;
                             PreviewProps ppP(beg_tileW, beg_tileH, crW, crH, skipP);
-                            imgsrc->getImage(currWB, tr, origCropPart, ppP, params.toneCurve, params.raw);
+                            imgsrc->getImage(currWB, tr, origCropPart, ppP, params.toneCurve, params.raw, 0);
                             //baseImg->getStdImage(currWB, tr, origCropPart, ppP, true, params.toneCurve);
 
                             // we only need image reduced to 1/4 here
@@ -596,7 +596,7 @@ private:
                     for (int wcr = 0; wcr <= 2; wcr++) {
                         for (int hcr = 0; hcr <= 2; hcr++) {
                             PreviewProps ppP(coordW[wcr], coordH[hcr], crW, crH, 1);
-                            imgsrc->getImage(currWB, tr, origCropPart, ppP, params.toneCurve, params.raw);
+                            imgsrc->getImage(currWB, tr, origCropPart, ppP, params.toneCurve, params.raw, 0);
                             //baseImg->getStdImage(currWB, tr, origCropPart, ppP, true, params.toneCurve);
 
 
@@ -756,7 +756,7 @@ private:
         }
 
         baseImg = new Imagefloat(fw, fh);
-        imgsrc->getImage(currWB, tr, baseImg, pp, params.toneCurve, params.raw);
+        imgsrc->getImage(currWB, tr, baseImg, pp, params.toneCurve, params.raw, 1);
 
         if (pl) {
             pl->setProgress(0.50);
@@ -781,7 +781,7 @@ private:
 
         if (params.toneCurve.histmatching) {
             if (!params.toneCurve.fromHistMatching) {
-                imgsrc->getAutoMatchedToneCurve(params.icm, params.toneCurve.curve);
+                imgsrc->getAutoMatchedToneCurve(params.icm, params.wb.observer, params.toneCurve.curve);
             }
 
             if (params.toneCurve.autoexp) {
@@ -923,6 +923,14 @@ private:
         procparams::ProcParams& params = job->pparams;
         //ImProcFunctions ipf (&params, true);
         ImProcFunctions &ipf = * (ipf_p.get());
+
+        for (int sp = 0; sp < (int)params.locallab.spots.size(); sp++) {
+			if(params.locallab.spots.at(sp).expsharp  && params.dirpyrequalizer.cbdlMethod == "bef") {
+				if(params.locallab.spots.at(sp).shardamping < 1) {
+					params.locallab.spots.at(sp).shardamping = 1;
+				}				
+			}
+		}
 
         if (params.dirpyrequalizer.cbdlMethod == "bef" && params.dirpyrequalizer.enabled && !params.colorappearance.enabled) {
             const int W = baseImg->getWidth();
@@ -1167,6 +1175,14 @@ private:
                 float Tsigma;
                 float Tmin;
                 float Tmax;
+                float highresi = 0.f;
+                float nresi = 0.f;
+                float highresi46 =0.f;
+                float nresi46 = 0.f;
+                float Lhighresi = 0.f;
+                float Lnresi = 0.f;
+                float Lhighresi46 = 0.f;
+                float Lnresi46 = 0.f;
 
                 // No Locallab mask is shown in exported picture
                 ipf.Lab_Local(2, sp, shbuffer, labView, labView, reservView.get(), savenormtmView.get(), savenormretiView.get(), lastorigView.get(), fw, fh, 0, 0, fw, fh,  1, locRETgainCurve, locRETtransCurve, 
@@ -1221,7 +1237,8 @@ private:
                         LHutili, HHutili, CHutili, HHutilijz, CHutilijz, LHutilijz, cclocalcurve, localcutili, rgblocalcurve, localrgbutili, localexutili, exlocalcurve, hltonecurveloc, shtonecurveloc, tonecurveloc, lightCurveloc,
                         huerefblu, chromarefblu, lumarefblu, huere, chromare, lumare, sobelre, lastsav, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                         minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax,
-                        meantme, stdtme, meanretie, stdretie, fab
+                        meantme, stdtme, meanretie, stdretie, fab,
+                        highresi, nresi, highresi46, nresi46, Lhighresi, Lnresi, Lhighresi46, Lnresi46
 );
 
                 if (sp + 1u < params.locallab.spots.size()) {

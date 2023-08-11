@@ -1,17 +1,20 @@
-name: Build AppImage
+name: AppImage Build
 on:
   push:
     branches:
       - dev
+      - releases
     tags:
       - '[0-9]+.*'
   pull_request:
     branches:
       - dev
   workflow_dispatch:
+env:
+  publish_pre_dev_labels: '[]'
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -76,6 +79,8 @@ jobs:
 
       - name: Include Lensfun
         run: |
+          echo "Patching lensfun-update-data script."
+          sudo sed -i 's/HTTPError\(, ValueError\)/URLError\1/' $(which lensfun-update-data)
           echo "Updating Lensfun database."
           lensfun-update-data
           echo "Creating Lensfun directory in the build directory."
@@ -87,7 +92,7 @@ jobs:
         id: appimage-tools-cache
         uses: actions/cache@v2
         with:
-          key: appimage-tools
+          key: appimage-tools-1
           path: |
             ./build/linuxdeploy-x86_64.AppImage
             ./build/linuxdeploy-plugin-gtk.sh
@@ -99,7 +104,9 @@ jobs:
           echo "Downloading linuxdeploy."
           curl --location 'https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage' > linuxdeploy-x86_64.AppImage
           echo "Downloading GTK plugin for linuxdeploy."
-          curl --location 'https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh' > linuxdeploy-plugin-gtk.sh
+          curl --location 'https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh' \
+            | sed 's/^\(export GTK_THEME\)/#\1/' \
+            > linuxdeploy-plugin-gtk.sh
           echo "Setting execute bit on all AppImage tools."
           chmod u+x linuxdeploy-*
 
@@ -162,3 +169,33 @@ jobs:
           files: |
             ${{env.PUBLISH_NAME}}.AppImage
             ${{env.PUBLISH_NAME}}-AboutThisBuild.txt
+
+      - name: Prepare for publishing pre-dev
+        id: prepare-publish-pre-dev
+        if: ${{github.event_name == 'pull_request' && contains(fromJSON(env.publish_pre_dev_labels), github.event.pull_request.head.label)}}
+        run: |
+          echo "Making ref name."
+          REF_NAME_FILTERED="$(echo '${{github.event.pull_request.head.label}}' | tr ':' '_' | sed 's/[^A-z0-9_.-]//g')"
+          echo "Ref name is '$REF_NAME_FILTERED'."
+
+          echo "Setting publish name."
+          PUBLISH_NAME="RawTherapee_${REF_NAME_FILTERED}_${{matrix.build_type}}"
+          echo "Publish name is '$PUBLISH_NAME'."
+
+          echo "Renaming AppImage."
+          cp "build/$ARTIFACT_NAME.AppImage" "$PUBLISH_NAME.AppImage"
+
+          echo "Creating version file."
+          cp "build/AboutThisBuild.txt" "$PUBLISH_NAME-AppImage-AboutThisBuild.txt"
+
+          echo "Recording publish name."
+          echo "PUBLISH_NAME=$PUBLISH_NAME" >> $GITHUB_ENV
+
+      - name: Publish pre-dev artifacts
+        uses: softprops/action-gh-release@v1
+        if: ${{steps.prepare-publish-pre-dev.outcome == 'success'}}
+        with:
+          tag_name: pre-dev-github-actions
+          files: |
+            ${{env.PUBLISH_NAME}}.AppImage
+            ${{env.PUBLISH_NAME}}-AppImage-AboutThisBuild.txt

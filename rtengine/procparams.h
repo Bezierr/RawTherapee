@@ -18,6 +18,7 @@
  */
 #pragma once
 
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <map>
@@ -58,6 +59,8 @@ class LocHHmaskCurve;
 class LocLLmaskexpCurve;
 class LocCCmaskexpCurve;
 class LocHHmaskexpCurve;
+
+enum class StandardObserver;
 
 enum RenderingIntent : int {
     RI_PERCEPTUAL = INTENT_PERCEPTUAL,
@@ -299,6 +302,7 @@ struct ToneCurveParams {
     int shcompr;
     int hlcompr; // Highlight Recovery's compression
     int hlbl; // Highlight Recovery's compression
+    double hlth; // Highlight Recovery's threshold
     int hlcomprthresh; // Highlight Recovery's threshold
     bool histmatching; // histogram matching
     bool fromHistMatching;
@@ -376,7 +380,7 @@ struct LCurveParams {
     int     brightness;
     int     contrast;
     int     chromaticity;
-    bool    avoidcolorshift;
+    Glib::ustring gamutmunselmethod;
     double  rstprotection;
     bool    lcredsk;
 
@@ -633,11 +637,18 @@ struct WBEntry {
 
 struct WBParams {
     bool enabled;
-    Glib::ustring   method;
-    int             temperature;
-    double          green;
-    double          equal;
-    double          tempBias;
+    Glib::ustring    method;
+    int              temperature;
+    double           green;
+    double           equal;
+    double           tempBias;
+    StandardObserver observer;
+    double           itcwb_green;
+    int              itcwb_rgreen;
+    bool             itcwb_nopurple;
+    bool             itcwb_alg;
+    Glib::ustring    itcwb_prim;
+    bool             itcwb_sampling;
 
     WBParams();
 
@@ -709,7 +720,6 @@ struct ColorAppearanceParams {
     double greenout;
     int tempsc;
     double greensc;
-    bool presetcat02;
 
     ColorAppearanceParams();
 
@@ -825,6 +835,22 @@ struct SHParams {
 
     bool operator ==(const SHParams& other) const;
     bool operator !=(const SHParams& other) const;
+};
+
+/**
+ * Tone equalizer parameters.
+ */
+struct ToneEqualizerParams {
+    bool enabled;
+    std::array<int, 5> bands;
+    int regularization;
+    bool show_colormap;
+    double pivot;
+
+    ToneEqualizerParams();
+
+    bool operator ==(const ToneEqualizerParams &other) const;
+    bool operator !=(const ToneEqualizerParams &other) const;
 };
 
 /**
@@ -1020,6 +1046,8 @@ struct LocallabParams {
         int structexclu;
         double struc;
         Glib::ustring shapeMethod; // IND, SYM, INDSL, SYMSL
+        Glib::ustring avoidgamutMethod; // NONE, LAB, XYZ
+		
         std::vector<int> loc; // For ellipse/rectangle: {locX, locXL, locY, locYT}
         int centerX;
         int centerY;
@@ -1039,8 +1067,6 @@ struct LocallabParams {
         double transitgrad;
         bool hishow;
         bool activ;
-        bool avoid;
-        bool avoidmun;
         bool blwh;
         bool recurs;
         bool laplac;
@@ -1197,6 +1223,7 @@ struct LocallabParams {
         double slomaskSH;
         double lapmaskSH;
         int detailSH;
+        double tePivot;
         double reparsh;
         std::vector<double> LmaskSHcurve;
         double fatamountSH;
@@ -1909,6 +1936,7 @@ struct ColorManagementParams {
         ACES_P1,
         WIDE_GAMUT,
         ACES_P0,
+        JDC_MAX,
         BRUCE_RGB,
         BETA_RGB,
         BEST_RGB,
@@ -1937,6 +1965,7 @@ struct ColorManagementParams {
     double bluy;
     double preser;
     bool fbw;
+    bool gamut;
     double labgridcieALow;
     double labgridcieBLow;
     double labgridcieAHigh;
@@ -2070,7 +2099,7 @@ struct WaveletParams {
     std::vector<double> blcurve;
     std::vector<double> levelshc;
     std::vector<double> opacityCurveRG;
-    std::vector<double> opacityCurveSH;
+    //std::vector<double> opacityCurveSH;
     std::vector<double> opacityCurveBY;
     std::vector<double> opacityCurveW;
     std::vector<double> opacityCurveWL;
@@ -2143,7 +2172,7 @@ struct WaveletParams {
     Glib::ustring Backmethod;
     Glib::ustring Tilesmethod;
     Glib::ustring complexmethod;
-    Glib::ustring denmethod;
+    //Glib::ustring denmethod;
     Glib::ustring mixmethod;
     Glib::ustring slimethod;
     Glib::ustring quamethod;
@@ -2440,6 +2469,7 @@ struct RAWParams {
 
     Glib::ustring ff_file;
     bool ff_AutoSelect;
+    bool ff_FromMetaData;
     int ff_BlurRadius;
     Glib::ustring ff_BlurType;
     bool ff_AutoClipControl;
@@ -2547,6 +2577,7 @@ public:
     EPDParams               epd;             ///< Edge Preserving Decomposition parameters
     FattalToneMappingParams fattal;          ///< Fattal02 tone mapping
     SHParams                sh;              ///< Shadow/highlight enhancement parameters
+    ToneEqualizerParams     toneEqualizer;   ///< Tone equalizer parameters
     CropParams              crop;            ///< Crop parameters
     CoarseTransformParams   coarse;          ///< Coarse transformation (90, 180, 270 deg rotation, h/v flipping) parameters
     CommonTransformParams   commonTrans;     ///< Common transformation parameters (autofill)

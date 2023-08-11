@@ -438,9 +438,21 @@ public:
         double Tmax;
     };
 
+    struct locallabDenoiseLC  {
+        double highres;
+        double nres; 
+        double highres46;
+        double nres46; 
+        double Lhighres; 
+        double Lnres; 
+        double Lhighres46; 
+        double Lnres46;
+    };
+
     virtual ~LocallabListener() = default;
 //    virtual void refChanged(const std::vector<locallabRef> &ref, int selspot) = 0;
     virtual void minmaxChanged(const std::vector<locallabRetiMinMax> &minmax, int selspot) = 0;
+    virtual void denChanged(const std::vector<locallabDenoiseLC> &denlc, int selspot) = 0;
     virtual void logencodChanged(const float blackev, const float whiteev, const float sourceg, const float sourceab, const float targetg, const bool autocomput, const bool autocie, const float jz1) = 0;
     virtual void refChanged2(float *huerefp, float *chromarefp, float *lumarefp, float *fabrefp, int selspot) = 0;
 };
@@ -472,7 +484,7 @@ class AutoWBListener
 {
 public:
     virtual ~AutoWBListener() = default;
-    virtual void WBChanged(double temp, double green, float studgood) = 0;
+    virtual void WBChanged(int met, double temp, double green, double rw, double gw, double bw, float temp0,  float delta, int bia, int dread, float studgood, float minchrom, int kmin, float histmin, float histmax) = 0;
 };
 
 class FrameCountListener
@@ -493,7 +505,7 @@ class ImageTypeListener
 {
 public:
     virtual ~ImageTypeListener() = default;
-    virtual void imageTypeChanged(bool isRaw, bool isBayer, bool isXtrans, bool is_Mono = false) = 0;
+    virtual void imageTypeChanged(bool isRaw, bool isBayer, bool isXtrans, bool is_Mono = false, bool isGainMapSupported = false) = 0;
 };
 
 class AutoContrastListener
@@ -619,8 +631,8 @@ public:
       * @return a pointer to the Crop object that handles the image data trough its own pipeline */
     virtual DetailedCrop* createCrop  (::EditDataProvider *editDataProvider, bool isDetailWindow) = 0;
 
-    virtual bool        getAutoWB   (double& temp, double& green, double equal, double tempBias) = 0;
-    virtual void        getCamWB    (double& temp, double& green) = 0;
+    virtual bool        getAutoWB   (double& temp, double& green, double equal, StandardObserver observer, double tempBias) = 0;
+    virtual void        getCamWB    (double& temp, double& green, StandardObserver observer) = 0;
     virtual void        getSpotWB  (int x, int y, int rectSize, double& temp, double& green) = 0;
     virtual bool        getFilmNegativeSpot(int x, int y, int spotSize, procparams::FilmNegativeParams::RGB &refInput, procparams::FilmNegativeParams::RGB &refOutput) = 0;
     
